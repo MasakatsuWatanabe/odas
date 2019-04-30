@@ -22,6 +22,7 @@
     */
     
     #include <sink/snk_pots.h>
+    #include <errno.h>
 
     snk_pots_obj * snk_pots_construct(const snk_pots_cfg * snk_pots_config, const msg_pots_cfg * msg_pots_config) {
 
@@ -151,6 +152,8 @@
         if ( (connect(obj->sid, (struct sockaddr *) &(obj->sserver), sizeof(obj->sserver))) < 0 ) {
 
             printf("Sink pots: Cannot connect to server\n");
+            printf("ip:%s\n", obj->interface->ip );
+            printf("errno:%d\n", errno);
             exit(EXIT_FAILURE);
 
         }  

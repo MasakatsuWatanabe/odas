@@ -26,7 +26,10 @@
     #include <stdlib.h>
     #include <stdio.h>
     #include <string.h>
+    #include <sys/socket.h>
     #include <alsa/asoundlib.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
 
     #include "../general/format.h"
     #include "../general/interface.h"
@@ -50,6 +53,9 @@
 
         char * buffer;
         unsigned int bufferSize;
+
+        struct sockaddr_in sserver;
+        int sid;
 
         char bytes[4];
 
@@ -78,17 +84,23 @@
 
     void src_hops_open_interface_soundcard(src_hops_obj * obj);
 
+    void src_hops_open_interface_socket(src_hops_obj * obj);
+
     void src_hops_close(src_hops_obj * obj);
 
     void src_hops_close_interface_file(src_hops_obj * obj);
 
     void src_hops_close_interface_soundcard(src_hops_obj * obj);
 
+    void src_hops_close_interface_socket(src_hops_obj * obj);
+
     int src_hops_process(src_hops_obj * obj);
 
     int src_hops_process_interface_file(src_hops_obj * obj);
 
     int src_hops_process_interface_soundcard(src_hops_obj * obj);
+
+    int src_hops_process_interface_socket(src_hops_obj * obj);
 
     void src_hops_process_format_binary_int08(src_hops_obj * obj);
 

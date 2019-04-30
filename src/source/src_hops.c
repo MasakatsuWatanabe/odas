@@ -48,7 +48,12 @@
               ((obj->interface->type == interface_soundcard)  && (obj->format->type == format_binary_int08)) ||
               ((obj->interface->type == interface_soundcard)  && (obj->format->type == format_binary_int16)) ||
               ((obj->interface->type == interface_soundcard)  && (obj->format->type == format_binary_int24)) ||
-              ((obj->interface->type == interface_soundcard)  && (obj->format->type == format_binary_int32)))) {
+              ((obj->interface->type == interface_soundcard)  && (obj->format->type == format_binary_int32)) ||
+              ((obj->interface->type == interface_socket)  && (obj->format->type == format_binary_int08)) ||
+              ((obj->interface->type == interface_socket)  && (obj->format->type == format_binary_int16)) ||
+              ((obj->interface->type == interface_socket)  && (obj->format->type == format_binary_int24)) ||
+              ((obj->interface->type == interface_socket)  && (obj->format->type == format_binary_int32))))
+        {
             
             printf("Source hops: Invalid interface and/or format.\n");
             exit(EXIT_FAILURE);
@@ -108,6 +113,12 @@
             case interface_soundcard:
 
                 src_hops_open_interface_soundcard(obj);
+
+            break;
+
+            case interface_socket:
+
+                src_hops_open_interface_socket(obj);
 
             break;
 
@@ -224,6 +235,27 @@
 
     }
 
+    void src_hops_open_interface_socket(src_hops_obj * obj) {
+        memset(&(obj->sserver), 0x00, sizeof(struct sockaddr_in));
+
+        obj->sserver.sin_family = AF_INET;
+        obj->sserver.sin_addr.s_addr = inet_addr(obj->interface->ip);
+        obj->sserver.sin_port = htons(obj->interface->port);
+        obj->sid = socket(AF_INET, SOCK_DGRAM, 0);
+
+        printf("obj->interface->ip:%s\n", obj->interface->ip);
+        printf("obj->interface->port:%d\n", obj->interface->port);
+
+        if ( (bind(obj->sid, (struct sockaddr *) &(obj->sserver), sizeof(obj->sserver))) < 0 ) {
+
+            printf("Source hops: Cannot connect to server\n");
+            printf("errno:%d\n", errno);
+            exit(EXIT_FAILURE);
+
+        }   
+
+    }
+
     void src_hops_close(src_hops_obj * obj) {
 
         switch(obj->interface->type) {
@@ -237,6 +269,12 @@
             case interface_soundcard:
 
                 src_hops_close_interface_soundcard(obj);
+
+            break;
+
+            case interface_socket:
+
+                src_hops_close_interface_socket(obj);
 
             break;
 
@@ -261,6 +299,11 @@
 
         snd_pcm_close(obj->ch);
 
+    }
+
+    void src_hops_close_interface_socket(src_hops_obj * obj) {
+
+        close(obj->sid);
     }
 
     int src_hops_process(src_hops_obj * obj) {
@@ -313,6 +356,12 @@
             case interface_soundcard:
 
                 rtnValue = src_hops_process_interface_soundcard(obj);
+
+            break;
+
+            case interface_socket:
+
+                rtnValue = src_hops_process_interface_socket(obj);
 
             break;
 
@@ -373,6 +422,24 @@
 
         return rtnValue;
 
+    }
+
+    int src_hops_process_interface_socket(src_hops_obj * obj) {
+
+        int rtnValue;
+
+        if( recvfrom( obj->sid, obj->buffer, obj->bufferSize, 0, NULL, NULL ) < 0 ) {
+
+            rtnValue = -1;
+
+        }
+        else {
+
+             rtnValue = 0;    
+
+        }
+           
+        return rtnValue;
     }
 
     void src_hops_process_format_binary_int08(src_hops_obj * obj) {

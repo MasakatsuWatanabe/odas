@@ -22,6 +22,7 @@
     */
     
     #include <sink/snk_tracks.h>
+    #include <errno.h>
 
     snk_tracks_obj * snk_tracks_construct(const snk_tracks_cfg * snk_tracks_config, const msg_tracks_cfg * msg_tracks_config) {
 
@@ -153,6 +154,7 @@
         if ( (connect(obj->sid, (struct sockaddr *) &(obj->sserver), sizeof(obj->sserver))) < 0 ) {
 
             printf("Sink tracks: Cannot connect to server\n");
+            printf("errno:%d\n", errno);
             exit(EXIT_FAILURE);
 
         }   
